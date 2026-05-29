@@ -1,0 +1,109 @@
+generator client { provider = "prisma-client-js" }
+
+datasource db { provider = "postgresql", url = env("DATABASE_URL") }
+
+enum Role { client barber owner }
+enum SubscriptionStatus { active inactive expired }
+enum AppointmentStatus { pending confirmed completed cancelled }
+enum PaymentStatus { unpaid paid failed refunded }
+enum SubscriptionPlan { monthly annual }
+enum SubscriptionState { active cancelled expired }
+
+model User {
+  id            String      @id @default(cuid())
+  name          String
+  email         String      @unique
+  password      String
+  phone         String?
+  role          Role        @default(client)
+  createdAt     DateTime    @default(now())
+  barber        Barber?
+  ownedShops    Shop[]      @relation("OwnerShops")
+  appointments  Appointment[] @relation("ClientAppointments")
+}
+
+model Barber {
+  id                    String             @id @default(cuid())
+  userId                String             @unique
+  shopId                String?
+  shopName              String
+  bio                   String?
+  photo                 String?
+  rating                Float              @default(0)
+  specialty             String
+  subscriptionStatus    SubscriptionStatus @default(inactive)
+  subscriptionEndDate   DateTime?
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  createdAt             DateTime           @default(now())
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop                  Shop?              @relation(fields: [shopId], references: [id])
+  services              Service[]
+  appointments          Appointment[]
+  reviews               Review[]
+  subscriptions         Subscription[]
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  barberId    String
+  name        String
+  duration    Int
+  price       Float
+  description String?
+  barber      Barber    @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+}
+
+model Appointment {
+  id            String           @id @default(cuid())
+  clientId      String
+  barberId      String
+  serviceId     String
+  dateTime      DateTime
+  duration      Int
+  price         Float
+  status        AppointmentStatus @default(pending)
+  paymentStatus PaymentStatus      @default(unpaid)
+  createdAt     DateTime          @default(now())
+  client        User              @relation("ClientAppointments", fields: [clientId], references: [id], onDelete: Cascade)
+  barber        Barber            @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service       Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  review        Review?
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  appointmentId String   @unique
+  rating        Int
+  comment       String?
+  createdAt     DateTime @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model Shop {
+  id           String   @id @default(cuid())
+  ownerId      String
+  name         String
+  address      String
+  phone        String?
+  lat          Float?
+  lng          Float?
+  openingHours String?
+  owner        User     @relation("OwnerShops", fields: [ownerId], references: [id], onDelete: Cascade)
+  barbers      Barber[]
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  barberId             String
+  plan                 SubscriptionPlan   @default(monthly)
+  startDate            DateTime
+  endDate              DateTime
+  amount               Float
+  status               SubscriptionState  @default(active)
+  stripeSubscriptionId String?            @unique
+  createdAt            DateTime           @default(now())
+  barber               Barber             @relation(fields: [barberId], references: [id], onDelete: Cascade)
+}
+

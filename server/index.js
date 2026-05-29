@@ -1,0 +1,27 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import auth from './controllers/auth.js';
+import barbers from './controllers/barbers.js';
+import appointments from './controllers/appointments.js';
+import subscription, { webhook as subscriptionWebhook } from './controllers/subscription.js';
+import reviews from './controllers/reviews.js';
+import payments, { webhook as paymentsWebhook } from './controllers/payments.js';
+
+const app = express();
+const origins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({ origin: origins.length ? origins : true, credentials: true }));
+app.get('/health', (req, res) => res.json({ ok: true }));
+app.post('/api/subscription/webhook', express.raw({ type: 'application/json' }), subscriptionWebhook);
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentsWebhook);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/api/auth', auth);
+app.use('/api/barbers', barbers);
+app.use('/api/appointments', appointments);
+app.use('/api/subscription', subscription);
+app.use('/api/reviews', reviews);
+app.use('/api/payments', payments);
+app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Server error' }); });
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => console.log(`API on ${port}`));
