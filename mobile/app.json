@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Barber Booking",
+    "slug": "barber-booking",
+    "scheme": "barberbooking",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "web": {
+      "output": "static"
+    }
+  }
+}

@@ -13,7 +13,7 @@ const checkout = async (req, res) => {
     if (!bar) return res.status(404).json({ error: 'Barber not found' });
     const cid = bar.stripeCustomerId || (await stripe.customers.create({ email: bar.user.email, metadata: { barberId: String(bar.id) } })).id;
     if (!bar.stripeCustomerId) await prisma.barber.update({ where: { id: bar.id }, data: { stripeCustomerId: cid } });
-    const s = await stripe.checkout.sessions.create({ mode: 'subscription', customer: cid, line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }], subscription_data: { trial_period_days: 7, metadata: { barberId: String(bar.id) } }, success_url: `${process.env.CLIENT_URL}/success`, cancel_url: `${process.env.CLIENT_URL}/cancel` });
+    const s = await stripe.checkout.sessions.create({ mode: 'subscription', customer: cid, line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }], subscription_data: { trial_period_days: 7, metadata: { barberId: String(bar.id) } }, success_url: process.env.CLIENT_URL, cancel_url: process.env.CLIENT_URL });
     res.json({ url: s.url, sessionId: s.id });
   } catch (e) { res.status(400).json({ error: e.message }); }
 };
@@ -31,7 +31,7 @@ r.post('/create-customer-portal', verifyJWT, requireRole(['barber']), async (req
       await prisma.barber.update({ where: { id: bar.id }, data: { stripeCustomerId: c.id } });
       bar.stripeCustomerId = c.id;
     }
-    const s = await stripe.billingPortal.sessions.create({ customer: bar.stripeCustomerId, return_url: `${process.env.CLIENT_URL}/subscription` });
+    const s = await stripe.billingPortal.sessions.create({ customer: bar.stripeCustomerId, return_url: process.env.CLIENT_URL });
     res.json({ url: s.url });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });

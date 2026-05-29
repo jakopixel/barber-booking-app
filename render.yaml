@@ -11,3 +11,17 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: CLIENT_URL
+        value: https://barber-app-web.onrender.com
+      - key: CORS_ORIGIN
+        value: https://barber-app-web.onrender.com
+  - type: web
+    name: barber-app-web
+    runtime: static
+    plan: starter
+    rootDir: mobile
+    buildCommand: npm install && npx expo export --platform web
+    staticPublishPath: mobile/dist
+    envVars:
+      - key: EXPO_PUBLIC_API_URL
+        value: https://barber-app-server.onrender.com

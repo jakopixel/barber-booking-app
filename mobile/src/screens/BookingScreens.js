@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Linking } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery } from '@tanstack/react-query';
-import { useStripe } from '@stripe/stripe-react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DarkCard from '../components/DarkCard.js';
 import DarkButton from '../components/DarkButton.js';
@@ -65,15 +64,11 @@ export function DateTimePickerScreen({ route, navigation }) {
 
 export function ConfirmationScreen({ route, navigation }) {
   const { barberId, service, dateTime } = route.params;
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const pay = async () => {
     try {
       const appt = await request('/api/appointments', { method: 'POST', body: { barberId, serviceId: service.id, dateTime } });
-      const { clientSecret } = await request('/api/payments/create-intent', { method: 'POST', body: { appointmentId: appt.id, amount: service.price } });
-      const { error: e1 } = await initPaymentSheet({ paymentIntentClientSecret: clientSecret, merchantDisplayName: 'Barber Booking' });
-      if (e1) throw new Error(e1.message);
-      const { error: e2 } = await presentPaymentSheet();
-      if (e2) throw new Error(e2.message);
+      const { url } = await request('/api/payments/create-checkout', { method: 'POST', body: { appointmentId: appt.id, amount: service.price } });
+      if (url) await Linking.openURL(url);
       Alert.alert('Ok', 'Prenotazione confermata');
       navigation.navigate('Appointments');
     } catch (e) { Alert.alert('Errore', e.message); }
