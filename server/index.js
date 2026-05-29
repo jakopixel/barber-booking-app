@@ -13,6 +13,7 @@ import owners from './controllers/owners.js';
 const app = express();
 const origins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
 app.use(cors({ origin: origins.length ? origins : true, credentials: true }));
+app.get('/', (req, res) => res.json({ ok: true, name: 'barber-app-server' }));
 app.get('/health', (req, res) => res.json({ ok: true }));
 app.post('/api/subscription/webhook', express.raw({ type: 'application/json' }), subscriptionWebhook);
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentsWebhook);
