@@ -7,6 +7,8 @@ import appointments from './controllers/appointments.js';
 import subscription, { webhook as subscriptionWebhook } from './controllers/subscription.js';
 import reviews from './controllers/reviews.js';
 import payments, { webhook as paymentsWebhook } from './controllers/payments.js';
+import shops from './controllers/shop.js';
+import owners from './controllers/owners.js';
 
 const app = express();
 const origins = (process.env.CORS_ORIGIN || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -22,6 +24,8 @@ app.use('/api/appointments', appointments);
 app.use('/api/subscription', subscription);
 app.use('/api/reviews', reviews);
 app.use('/api/payments', payments);
+app.use('/api/shops', shops);
+app.use('/api/owners', owners);
 app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Server error' }); });
 const port = process.env.PORT || 10000;
 app.listen(port, '0.0.0.0', () => console.log(`API on ${port}`));

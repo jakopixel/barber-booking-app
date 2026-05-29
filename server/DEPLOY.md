@@ -19,11 +19,10 @@
 - `CORS_ORIGIN` = url client separato da virgole se serve
 
 ## 4. Prisma
-- Esegui migrazioni verso Neon con:
-  - `npx prisma migrate deploy`
+- Render esegue `npx prisma migrate deploy` a ogni deploy
+- In locale puoi usare `npm run db:migrate`
 
 ## 5. Webhook Stripe
 - Imposta su Stripe gli endpoint:
   - `/api/subscription/webhook`
   - `/api/payments/webhook`
-

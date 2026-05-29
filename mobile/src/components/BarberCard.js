@@ -1,34 +1,40 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DarkCard from './DarkCard.js';
+import DarkButton from './DarkButton.js';
+import RatingStars from './RatingStars.js';
+import Chip from './Chip.js';
+import { C, T, SP } from '../constants/theme.js';
 
-export default function BarberCard({ item, onPress }) {
-  const img = item.photo || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600';
-  return (
-    <TouchableOpacity onPress={onPress} style={s.card}>
+export default function BarberCard({ item, onPress, onBook }) {
+  const img = item.photo || item.shop?.photo || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=900';
+  return <DarkCard style={s.card}>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
       <Image source={{ uri: img }} style={s.img} />
-      <View style={{ flex: 1 }}>
-        <Text style={s.name}>{item.user?.name || item.shopName}</Text>
-        <Text style={s.shop}>{item.shopName}</Text>
-        <View style={s.row}>
-          <Text style={s.meta}><Ionicons name="star" size={12} /> {item.rating?.toFixed?.(1) ?? '0.0'}</Text>
-          <Text style={s.meta}>📍 {item.distanceKm != null ? `${item.distanceKm.toFixed(1)} km` : 'N/A'}</Text>
+      <View style={s.box}>
+        <View style={s.row}><Text style={s.name}>{item.user?.name || item.shopName}</Text><MaterialCommunityIcons name="chevron-right" size={20} color={C.sub} /></View>
+        <Text style={s.shop}>{item.shop?.name || item.shopName}</Text>
+        <View style={s.metaRow}>
+          <RatingStars value={item.rating || 0} size={16} />
+          <View style={s.meta}><MaterialCommunityIcons name="map-marker-outline" size={14} color={C.p} /><Text style={s.metaT}>{item.distance != null ? `${item.distance.toFixed(1)} km` : 'N/A'}</Text></View>
         </View>
-        <Text style={s.tag}>{item.specialty}</Text>
+        <View style={s.chips}><Chip text={item.specialty} /><Chip text={item.shop?.address?.split(',')[0] || 'Salone'} color={C.input} /></View>
       </View>
-      <Text style={s.cta}>Profilo</Text>
     </TouchableOpacity>
-  );
+    <DarkButton title="Prenota" onPress={onBook || onPress} style={{ marginTop: 16 }} />
+  </DarkCard>;
 }
 
 const s = StyleSheet.create({
-  card: { flexDirection: 'row', backgroundColor: '#fff', padding: 12, borderRadius: 18, gap: 12, borderWidth: 1, borderColor: '#ececec', alignItems: 'center' },
-  img: { width: 72, height: 72, borderRadius: 16, backgroundColor: '#eee' },
-  name: { fontSize: 16, fontWeight: '800', color: '#111' },
-  shop: { color: '#666', marginTop: 2 },
-  row: { flexDirection: 'row', gap: 10, marginTop: 6, flexWrap: 'wrap' },
-  meta: { color: '#444', fontSize: 12 },
-  tag: { marginTop: 6, color: '#111', fontWeight: '700' },
-  cta: { color: '#fff', backgroundColor: '#111', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, overflow: 'hidden', fontWeight: '700' }
+  card: { padding: 16 },
+  img: { width: '100%', height: 170, borderRadius: 12, backgroundColor: C.input, marginBottom: SP[2] },
+  box: { gap: 6 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  name: { color: C.txt, fontSize: T.h2, fontWeight: '900', flex: 1, paddingRight: 12 },
+  shop: { color: C.sub, fontSize: T.body },
+  metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metaT: { color: C.sub, fontSize: 12, fontWeight: '700' },
+  chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 2 }
 });
-
